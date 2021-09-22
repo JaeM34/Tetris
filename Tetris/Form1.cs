@@ -12,31 +12,42 @@ namespace Tetris
 {
     public partial class Form1 : Form
     {
+
+        Timer graphicsTimer;
+        GameLoop gameLoop;
+
         public Form1()
         {
             InitializeComponent();
-            Main.init();
+            Paint += Form1_Paint;
+
+            graphicsTimer = new Timer();
+            graphicsTimer.Interval = 1000 / 20;
+            graphicsTimer.Tick += GraphicsTimer_Tick;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Rectangle resolution = Screen.PrimaryScreen.Bounds;
 
+            Tetris myTetris = new Tetris();
+            myTetris.Resolution = new Size(resolution.Width, resolution.Height);
+
+            gameLoop = new GameLoop();
+            gameLoop.Load(myTetris);
+            gameLoop.Start();
+
+            graphicsTimer.Start();
         }
 
-
-    }
-
-    /* the main class for running Tetris*/
-    public static class Main
-    {
-        /* dude whaaaat, that's so weird, wtf */
-        /* creating the grid for the blocks to be inside */
-        private static int[,] _map;
-
-        public static void init()
+        private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            _map = new int[5, 10];
-            System.Console.WriteLine("Hello world");
+            gameLoop.Draw(e.Graphics);
+        }
+
+        private void GraphicsTimer_Tick(Object sender, EventArgs e)
+        {
+            Invalidate();
         }
     }
 }
