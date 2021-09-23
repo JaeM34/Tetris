@@ -14,6 +14,7 @@ namespace Tetris
         private List<TetrisSprite> LoadedSprites;
         private TetrisSprite PlayerSprite;
         private Rectangle FloorHitbox;
+        bool[,] map = new bool[5, 10];
 
         //Used for loading in objects at the start of the game
         public void Load()
@@ -70,6 +71,7 @@ namespace Tetris
                         PlayerSprite.gravity = false;
                     }
                 }
+                //If the tetris has been placed any where, it will run this
                 if(!PlayerSprite.gravity)
                 {
                     TetrisSprite loadedSprite = new TetrisSprite
@@ -82,8 +84,10 @@ namespace Tetris
                         velocity = PlayerSprite.velocity,
                         gravity = false
                     };
+                    map[PlayerSprite.x / 32, PlayerSprite.y / 32] = true;
                     loadedSprite.UpdateHitbox();
                     LoadedSprites.Add(loadedSprite);
+                    TetrisPlaced(loadedSprite);
                     PlayerSprite = new TetrisSprite
                     {
                         SpriteImage = Properties.Resources.BlueTetris_1_png,
@@ -95,11 +99,13 @@ namespace Tetris
                         gravity = true
                     };
                 }
+                //If the tetris has not been placed, the tetris will continue falling
                 else if (!PlayerSprite.hitbox.IntersectsWith(FloorHitbox))
                 {
                     PlayerSprite.y += PlayerSprite.height;
                     PlayerSprite.UpdateHitbox();
                 }
+                //If the tetris has touched the floor and not another tetris, it will run this.
                 else
                 {
                     PlayerSprite.gravity = false;
@@ -128,7 +134,6 @@ namespace Tetris
             }
             PlayerSprite.Draw(gfx);
 
-            bool[,] map = new bool[5, 10];
             bool IsRowFilled = false;
             for (int x = 0; x < Resolution.Width / 32; x++)
             {
@@ -178,6 +183,31 @@ namespace Tetris
                 }
             }
             return null;
+        }
+
+
+        private void TetrisPlaced(TetrisSprite tetrisSprite)
+        {
+            int y = tetrisSprite.hitbox.Y/32;
+            bool isRowFilled = true;
+            List<Rectangle> toBeDeletedTetris = new List<Rectangle>();
+            for(int x = 0; x < Resolution.Width/32; x++)
+            {
+                if(!map[x, y])
+                {
+                    isRowFilled = map[x, y];
+                    break;
+                }
+                toBeDeletedTetris.Add(new Rectangle((x * 32) + 4, (y * 32) + 4, 32, 32));
+            }
+            if(isRowFilled)
+            {
+                foreach(Rectangle ToBeDeleted in toBeDeletedTetris)
+                {
+                    LoadedSprites.Remove(GetTetrisAtRectangularLocation(ToBeDeleted));
+                    map[ToBeDeleted.X / 32, ToBeDeleted.Y / 32] = false;
+                }
+            }
         }
     }
 }
