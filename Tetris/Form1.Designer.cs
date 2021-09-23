@@ -36,9 +36,10 @@ namespace Tetris
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.ClientSize = new System.Drawing.Size(1064, 1787);
+            this.ClientSize = new System.Drawing.Size(168, 329);
             this.DoubleBuffered = true;
-            this.MaximumSize = new System.Drawing.Size(1080, 1826);
+            this.MaximumSize = new System.Drawing.Size(184, 368);
+            this.MinimumSize = new System.Drawing.Size(184, 368);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";

@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace Tetris
 {
-    class GameSprite
+    class TetrisSprite
     {
         public Bitmap SpriteImage;
         public int x;
@@ -15,10 +15,17 @@ namespace Tetris
         public int width;
         public int height;
         public int velocity;
+        public Rectangle hitbox;
+        public bool gravity;
 
-        public GameSprite()
+        public TetrisSprite()
         {
 
+        }
+
+        public void UpdateHitbox()
+        {
+            hitbox = new Rectangle(x, y, width, height+1);
         }
 
         public void Draw(Graphics gfx)

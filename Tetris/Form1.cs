@@ -28,10 +28,8 @@ namespace Tetris
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Rectangle resolution = Screen.PrimaryScreen.Bounds;
-
             Tetris myTetris = new Tetris();
-            myTetris.Resolution = new Size(resolution.Width, resolution.Height);
+            myTetris.Resolution = new Size(168, 328);
 
             gameLoop = new GameLoop();
             gameLoop.Load(myTetris);

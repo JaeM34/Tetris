@@ -45,9 +45,10 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameSprite.cs" />
+    <Compile Include="TetrisSprite.cs" />
     <Compile Include="GameLoop.cs" />
     <Compile Include="Tetris.cs" />
     <Compile Include="Form1.cs">
