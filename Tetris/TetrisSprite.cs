@@ -20,7 +20,6 @@ namespace Tetris
 
         public TetrisSprite()
         {
-
         }
 
         public void UpdateHitbox()

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace Tetris
 {
@@ -14,11 +12,12 @@ namespace Tetris
         private List<TetrisSprite> LoadedSprites;
         private TetrisSprite PlayerSprite;
         private Rectangle FloorHitbox;
-        bool[,] map = new bool[5, 10];
+        bool[,] map;
 
         //Used for loading in objects at the start of the game
         public void Load()
         {
+            map = new bool[5, 10];
             FloorHitbox = new Rectangle(0, 323, 168, 32);
             LoadedSprites = new List<TetrisSprite>();
             PlayerSprite = new TetrisSprite
@@ -51,14 +50,14 @@ namespace Tetris
             {
                 Rectangle rectangle = PlayerSprite.hitbox;
                 rectangle.X += 32;
-                if(!IsHitboxCollide(rectangle))
+                if (!IsHitboxCollide(rectangle))
                     PlayerSprite.x += 32;
             }
             else if (Keyboard.IsKeyDown(Key.A) && tick % 5 == 0 && PlayerSprite.x - 16 > 0)
             {
                 Rectangle rectangle = PlayerSprite.hitbox;
                 rectangle.X -= 32;
-                if(!IsHitboxCollide(rectangle))
+                if (!IsHitboxCollide(rectangle))
                     PlayerSprite.x -= 32;
             }
             PlayerSprite.UpdateHitbox();
@@ -72,7 +71,7 @@ namespace Tetris
                     }
                 }
                 //If the tetris has been placed any where, it will run this
-                if(!PlayerSprite.gravity)
+                if (!PlayerSprite.gravity)
                 {
                     TetrisSprite loadedSprite = new TetrisSprite
                     {
@@ -112,7 +111,7 @@ namespace Tetris
                 }
                 tick = 0;
             }
-            if(Keyboard.IsKeyDown(Key.Escape))
+            if (Keyboard.IsKeyDown(Key.Escape))
             {
                 Unload();
             }
@@ -130,27 +129,8 @@ namespace Tetris
             foreach (TetrisSprite loadedSprite in LoadedSprites)
             {
                 loadedSprite.Draw(gfx);
-                gfx.DrawRectangle(new Pen(Color.Red), loadedSprite.hitbox);
             }
             PlayerSprite.Draw(gfx);
-
-            bool IsRowFilled = false;
-            for (int x = 0; x < Resolution.Width / 32; x++)
-            {
-                for (int y = 0; y < Resolution.Height / 32; y++)
-                {
-                    Rectangle r = new Rectangle((x * 32) + 4, (y * 32) + 4, 32, 32);
-                    map[x, y] = IsHitboxCollide(r);
-                    if (map[x, y])
-                    {
-                        gfx.DrawRectangle(new Pen(Color.Blue), r);
-                    }
-                    else
-                    {
-                        gfx.DrawRectangle(new Pen(Color.Green), r);
-                    }
-                }
-            }
         }
 
         /*
@@ -163,10 +143,11 @@ namespace Tetris
          */
         private bool IsHitboxCollide(Rectangle hitbox)
         {
-            foreach(TetrisSprite loadedSprite in LoadedSprites)
+            foreach (TetrisSprite loadedSprite in LoadedSprites)
             {
-                if(hitbox.IntersectsWith(loadedSprite.hitbox))
+                if (hitbox.IntersectsWith(loadedSprite.hitbox))
                 {
+
                     return true;
                 }
             }
@@ -186,27 +167,67 @@ namespace Tetris
         }
 
 
+        /*
+         * The main logic when it comes down to determining
+         * to if a row is filled and then proceeding to delete
+         * said row
+         * 
+         */
         private void TetrisPlaced(TetrisSprite tetrisSprite)
         {
-            int y = tetrisSprite.hitbox.Y/32;
+            map[((tetrisSprite.x - 4) / 32), ((tetrisSprite.y - 4) / 32)] = true;
+            int y = (tetrisSprite.hitbox.Y - 4) / 32;
             bool isRowFilled = true;
             List<Rectangle> toBeDeletedTetris = new List<Rectangle>();
-            for(int x = 0; x < Resolution.Width/32; x++)
+            for (int x = 0; x < (Resolution.Width - 4) / 32; x++)
             {
-                if(!map[x, y])
+                Rectangle r = new Rectangle((x * 32) + 4, (y * 32) + 4, 32, 32);
+                if (!map[x, y])
                 {
-                    isRowFilled = map[x, y];
+                    isRowFilled = false;
                     break;
                 }
-                toBeDeletedTetris.Add(new Rectangle((x * 32) + 4, (y * 32) + 4, 32, 32));
+                toBeDeletedTetris.Add(r);
             }
-            if(isRowFilled)
+            if (isRowFilled)
             {
-                foreach(Rectangle ToBeDeleted in toBeDeletedTetris)
+                foreach (Rectangle ToBeDeleted in toBeDeletedTetris)
                 {
+                    map[(ToBeDeleted.X - 4) / 32, (ToBeDeleted.Y - 4) / 32] = false;
                     LoadedSprites.Remove(GetTetrisAtRectangularLocation(ToBeDeleted));
-                    map[ToBeDeleted.X / 32, ToBeDeleted.Y / 32] = false;
                 }
+                TranslateTetrisDownwards(y, 1);
+            }
+        }
+
+        /*
+        * As the name implies, this will transform all the
+        * Tetris above the given Y coordiante downwards
+        * the set amount
+        */
+        private async void TranslateTetrisDownwards(int y, int amount)
+        {
+            await Task.Delay(80);
+            List<Rectangle> TetriToBeTranslated = new List<Rectangle>();
+            for (int x = 0; x < (Resolution.Width - 4) / 32; x++)
+            {
+                TetriToBeTranslated.Add(new Rectangle((x * 32) + 4, (y * 32) + 4, 32, 32));
+            }
+            foreach (Rectangle TetrisToBeTranslated in TetriToBeTranslated)
+            {
+                TetrisSprite temp = GetTetrisAtRectangularLocation(TetrisToBeTranslated);
+                map[((TetrisToBeTranslated.X - 4) / 32), (((TetrisToBeTranslated.Y) - 4) / 32)] = false;
+                if (temp == null)
+                {
+                    continue;
+                }
+                temp.y += temp.height;
+                temp.hitbox.Y += temp.height;
+                map[((temp.x - 4) / 32), ((temp.y - 4) / 32)] = true;
+            }
+            if (y > 0)
+            {
+                TranslateTetrisDownwards(y - 1, 1);
             }
         }
     }
